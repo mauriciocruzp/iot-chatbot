@@ -1,5 +1,5 @@
 # Image size ~ 400MB
-FROM node:21-alpine3.18 as builder
+FROM node:24.12-alpine as builder
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ RUN apk add --no-cache --virtual .gyp \
     && pnpm install \
     && apk del .gyp
 
-FROM node:21-alpine3.18 as deploy
+FROM node:24.12-alpine as deploy
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ EXPOSE $PORT
 COPY --from=builder /app ./
 COPY --from=builder /app/*.json /app/*-lock.yaml ./
 
-RUN corepack enable && corepack prepare pnpm@latest --activate 
+RUN corepack enable && corepack prepare pnpm@latest --activate
 ENV PNPM_HOME=/usr/local/bin
 
 RUN npm cache clean --force && pnpm install --production --ignore-scripts \
