@@ -19,7 +19,7 @@ WORKDIR /app
 
 # Railway asigna el puerto dinámicamente a través de la variable de entorno PORT
 # EXPOSE es informativo, Railway usará el puerto que asigne
-EXPOSE 3008
+EXPOSE 8080
 
 # Install Chromium and dependencies for WPPConnect
 RUN apk add --no-cache \

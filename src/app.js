@@ -9,7 +9,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const PORT = process.env.PORT ?? 3008
+const PORT = process.env.PORT ?? 8080
 
 const DEVICE_TOPIC = '/petfeeder/esp32-001/command'
 
