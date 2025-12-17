@@ -11,6 +11,8 @@ dotenv.config()
 
 const PORT = process.env.PORT ?? 3008
 
+console.log("PUERTOOOOO: ", process.env.PORT)
+
 const DEVICE_TOPIC = '/petfeeder/esp32-001/command'
 
 const mqttClient = mqtt.connect({
