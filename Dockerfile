@@ -3,28 +3,23 @@ FROM node:24.12-alpine as builder
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-ENV PNPM_HOME=/usr/local/bin
-
-COPY . .
-
-COPY package*.json *-lock.yaml ./
+COPY package*.json ./
 
 RUN apk add --no-cache --virtual .gyp \
         python3 \
         make \
         g++ \
     && apk add --no-cache git \
-    && pnpm install \
+    && npm ci \
     && apk del .gyp
 
 FROM node:24.12-alpine as deploy
 
 WORKDIR /app
 
-ARG PORT
-ENV PORT $PORT
-EXPOSE $PORT
+# Railway asigna el puerto dinámicamente a través de la variable de entorno PORT
+# EXPOSE es informativo, Railway usará el puerto que asigne
+EXPOSE 3008
 
 # Install Chromium and dependencies for WPPConnect
 RUN apk add --no-cache \
@@ -42,17 +37,14 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV CHROME_BIN=/usr/bin/chromium-browser
 ENV CHROMIUM_PATH=/usr/bin/chromium-browser
 
-COPY --from=builder /app ./
-COPY --from=builder /app/*.json /app/*-lock.yaml ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY . .
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-ENV PNPM_HOME=/usr/local/bin
-
-RUN npm cache clean --force && pnpm install --production --ignore-scripts \
+RUN npm cache clean --force \
     && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
     && mkdir -p /app/bot_sessions \
-    && chown -R nodejs:nodejs /app \
-    && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
+    && chown -R nodejs:nodejs /app
 
 USER nodejs
 
