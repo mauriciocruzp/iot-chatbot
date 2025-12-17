@@ -1,4 +1,5 @@
 import { join } from 'path'
+import { readFileSync, existsSync } from 'fs'
 import { createBot, createProvider, createFlow, addKeyword, utils } from '@builderbot/bot'
 import { MemoryDB as Database } from '@builderbot/bot'
 //import { BaileysProvider as Provider } from '@builderbot/provider-baileys'
@@ -111,6 +112,39 @@ const main = async () => {
 
     const adapterProvider = createProvider(Provider, {
         version: [2, 3000, 1027934701],
+        name: 'bot',
+        sessionPath: './bot_sessions',
+        headless: true,
+        devtools: false,
+        useChrome: true,
+        debug: false,
+        logQR: true,
+        browserWS: '',
+        browserArgs: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--disable-gpu'
+        ],
+        puppeteerOptions: {
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--disable-gpu'
+            ],
+            executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium-browser'
+        },
+        disableWelcome: true,
+        updatesLog: false,
+        autoClose: 0,
+        createPathFileToken: false,
     })
     const adapterDB = new Database()
 
@@ -167,6 +201,18 @@ const main = async () => {
             return res.end(JSON.stringify({ status: 'ok', blacklist }))
         })
     )
+
+    // Endpoint para servir el QR code
+    adapterProvider.server.get('/v1/qr', (req, res) => {
+        const qrPath = join(process.cwd(), 'bot.qr.png')
+        if (existsSync(qrPath)) {
+            const qrImage = readFileSync(qrPath)
+            res.writeHead(200, { 'Content-Type': 'image/png' })
+            return res.end(qrImage)
+        }
+        res.writeHead(404, { 'Content-Type': 'text/plain' })
+        return res.end('QR code not found')
+    })
 
     httpServer(+PORT)
 }

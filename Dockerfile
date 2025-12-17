@@ -50,6 +50,10 @@ ENV PNPM_HOME=/usr/local/bin
 
 RUN npm cache clean --force && pnpm install --production --ignore-scripts \
     && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
+    && mkdir -p /app/bot_sessions \
+    && chown -R nodejs:nodejs /app \
     && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
+
+USER nodejs
 
 CMD ["npm", "start"]
