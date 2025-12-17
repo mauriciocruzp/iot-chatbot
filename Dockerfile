@@ -26,6 +26,22 @@ ARG PORT
 ENV PORT $PORT
 EXPOSE $PORT
 
+# Install Chromium and dependencies for WPPConnect
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    font-noto-emoji
+
+# Set Chromium path for Puppeteer/Playwright
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV CHROME_BIN=/usr/bin/chromium-browser
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
+
 COPY --from=builder /app ./
 COPY --from=builder /app/*.json /app/*-lock.yaml ./
 
