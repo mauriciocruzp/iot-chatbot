@@ -17,13 +17,6 @@ FROM node:24.12-alpine as deploy
 
 WORKDIR /app
 
-# Railway asigna el puerto dinámicamente a través de la variable de entorno PORT
-# EXPOSE es informativo, Railway usará el puerto que asigne
-EXPOSE $PORT
-
-ARG PORT
-ENV PORT $PORT
-
 # Install Chromium and dependencies for WPPConnect
 RUN apk add --no-cache \
     chromium \

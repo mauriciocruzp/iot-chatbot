@@ -6,6 +6,7 @@ import { MemoryDB as Database } from '@builderbot/bot'
 import { WPPConnectProvider as Provider } from '@builderbot/provider-wppconnect'
 import mqtt from 'mqtt'
 import dotenv from 'dotenv'
+import express from 'express'
 
 dotenv.config()
 
@@ -154,6 +155,8 @@ const main = async () => {
         flow: adapterFlow,
         provider: adapterProvider,
         database: adapterDB,
+    }, {
+        host: '0.0.0.0'
     })
 
     adapterProvider.server.post(
@@ -216,7 +219,24 @@ const main = async () => {
         return res.end('QR code not found')
     })
 
-    httpServer(+PORT)
+    httpServer(3008)
+
+    // Servidor Express para servir el QR en el puerto 8080
+    const expressApp = express()
+    expressApp.get('/', (req, res) => {
+        const qrPath = join(process.cwd(), 'bot.qr.png')
+        if (existsSync(qrPath)) {
+            const qrImage = readFileSync(qrPath)
+            res.setHeader('Content-Type', 'image/png')
+            return res.send(qrImage)
+        }
+        res.status(404).send('QR code not found')
+    })
+
+    expressApp.listen(PORT, '0.0.0.0', () => {
+        console.log(`Express server running on port ${PORT}`)
+    })
+
 }
 
 main()
