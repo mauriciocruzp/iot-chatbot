@@ -34,7 +34,7 @@ const dispenseFlow = addKeyword(['Dispensar', 'dispensar'])
     .addAction(async (_, { flowDynamic }) => {
         await flowDynamic('Dispensando...')
         const payload = {
-            "command": "DISPENSE",
+            "action": "DISPENSE",
             "token": TOKEN
         }
         mqttClient.publish(DEVICE_TOPIC, JSON.stringify(payload), async (err) => {
