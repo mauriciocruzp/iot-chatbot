@@ -32,7 +32,10 @@ mqttClient.on('error', (err) => {
 const dispenseFlow = addKeyword(['Dispensar', 'dispensar'])
     .addAction(async (_, { flowDynamic }) => {
         await flowDynamic('Dispensando...')
-        mqttClient.publish(DEVICE_TOPIC, 'DISPENSE', async (err) => {
+        const payload = {
+            "command": "DISPENSE"
+        }
+        mqttClient.publish(DEVICE_TOPIC, JSON.stringify(payload), async (err) => {
             if (err) {
                 console.error(`Failed to publish message to topic "${DEVICE_TOPIC}"`, err)
             } else {
