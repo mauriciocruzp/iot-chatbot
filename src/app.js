@@ -10,6 +10,7 @@ import express from 'express'
 dotenv.config()
 
 const PORT = process.env.PORT ?? 8080
+const TOKEN = process.env.TOKEN ?? 'abc123'
 
 const DEVICE_TOPIC = '/petfeeder/esp32-001/command'
 
@@ -33,7 +34,8 @@ const dispenseFlow = addKeyword(['Dispensar', 'dispensar'])
     .addAction(async (_, { flowDynamic }) => {
         await flowDynamic('Dispensando...')
         const payload = {
-            "command": "DISPENSE"
+            "command": "DISPENSE",
+            "token": TOKEN
         }
         mqttClient.publish(DEVICE_TOPIC, JSON.stringify(payload), async (err) => {
             if (err) {
