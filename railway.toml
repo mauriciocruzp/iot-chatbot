@@ -1,0 +1,19 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/"
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# Volume configuration for persistent storage
+# Note: You need to create the volume manually in Railway dashboard:
+# 1. Go to your service in Railway
+# 2. Click on "Settings" tab
+# 3. Scroll to "Volumes" section
+# 4. Click "New Volume"
+# 5. Set mount path to: /app/bot_sessions
+# 6. Set volume size as needed (e.g., 1GB)

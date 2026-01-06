@@ -42,6 +42,9 @@ RUN npm cache clean --force \
     && mkdir -p /app/bot_sessions \
     && chown -R nodejs:nodejs /app
 
+# Declare volume for bot_sessions to persist data across deployments
+VOLUME ["/app/bot_sessions"]
+
 USER nodejs
 
 CMD ["npm", "start"]
