@@ -26,6 +26,13 @@ const mqttClient = mqtt.connect({
 
 mqttClient.on('connect', () => {
     console.log('Connected to MQTT broker')
+    mqttClient.subscribe(DEVICE_STATUS_TOPIC, (err) => {
+        if (err) {
+            console.error(`Failed to subscribe to topic "${DEVICE_STATUS_TOPIC}"`, err)
+        } else {
+            console.log(`Subscribed to topic "${DEVICE_STATUS_TOPIC}"`)
+        }
+    })
 })
 
 mqttClient.on('error', (err) => {
