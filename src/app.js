@@ -26,44 +26,33 @@ const mqttClient = mqtt.connect({
 
 mqttClient.on('connect', () => {
     console.log('Connected to MQTT broker')
-    // Subscribe to device status topic
-    mqttClient.subscribe(DEVICE_STATUS_TOPIC, (err) => {
-        if (err) {
-            console.error(`Failed to subscribe to topic "${DEVICE_STATUS_TOPIC}"`, err)
-        } else {
-            console.log(`Subscribed to topic "${DEVICE_STATUS_TOPIC}"`)
-        }
-    })
 })
 
 mqttClient.on('error', (err) => {
     console.error('MQTT connection error', err)
 })
 
-// Store provider reference and user phone numbers
 let providerInstance = null
 const userPhoneNumbers = new Set()
 
 const dispenseFlow = addKeyword(['Dispensar', 'dispensar'])
-    .addAction(async (ctx, { flowDynamic }) => {
-        // Store user phone number when they interact with the bot
+    .addAction(async (ctx) => {
         const phoneNumber = ctx.from
         if (phoneNumber) {
             userPhoneNumbers.add(phoneNumber)
             console.log(`User phone number stored: ${phoneNumber}`)
         }
 
-        await flowDynamic('Dispensando...')
         const payload = {
             "action": "DISPENSE",
             "token": TOKEN
         }
+
         mqttClient.publish(DEVICE_TOPIC, JSON.stringify(payload), async (err) => {
             if (err) {
                 console.error(`Failed to publish message to topic "${DEVICE_TOPIC}"`, err)
             } else {
                 console.log(`Message published to topic "${DEVICE_TOPIC}"`)
-                await flowDynamic('Dispensado correctamente')
             }
         })
     })
@@ -108,7 +97,6 @@ const main = async () => {
         createPathFileToken: false,
     })
 
-    // Store provider instance for sending messages
     providerInstance = adapterProvider
 
     const adapterDB = new Database()
@@ -121,20 +109,17 @@ const main = async () => {
 
     httpServer(3008)
 
-    // Set up MQTT message handler after bot is created
     mqttClient.on('message', async (topic, message) => {
         if (topic === DEVICE_STATUS_TOPIC) {
             try {
                 const status = JSON.parse(message)
                 console.log(`Estado del dispositivo: ${status.status}`)
 
-                // Send message to all registered users
                 const messageText = `Estado del dispositivo: ${status.status}`
 
                 if (userPhoneNumbers.size > 0 && providerInstance && providerInstance.vendor) {
                     for (const phoneNumber of userPhoneNumbers) {
                         try {
-                            // Pass empty options object to avoid undefined error
                             await providerInstance.sendMessage(phoneNumber, messageText, {})
                             console.log(`Message sent to ${phoneNumber}`)
                         } catch (error) {
@@ -143,15 +128,6 @@ const main = async () => {
                     }
                 } else if (!providerInstance?.vendor) {
                     console.log('Provider vendor not ready yet, skipping message send')
-                }
-
-                if (status.status === 'dispensing') {
-                    console.log('Dispensando...')
-                    mqttClient.publish(DEVICE_TOPIC, 'DISPENSE', async (err) => {
-                        if (err) {
-                            console.error(`Failed to publish message to topic "${DEVICE_TOPIC}"`, err)
-                        }
-                    })
                 }
             } catch (error) {
                 console.error('Error processing MQTT message:', error)
@@ -173,7 +149,6 @@ const main = async () => {
     expressApp.listen(PORT, '0.0.0.0', () => {
         console.log(`Express server running on port ${PORT}`)
     })
-
 }
 
 main()
